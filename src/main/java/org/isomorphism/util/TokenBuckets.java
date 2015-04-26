@@ -83,7 +83,7 @@ public final class TokenBuckets
     }
 
     /** Build the token bucket. */
-    public TokenBucketImpl build()
+    public TokenBucket build()
     {
       checkNotNull(capacity, "Must specify a capacity");
       checkNotNull(refillStrategy, "Must specify a refill strategy");
