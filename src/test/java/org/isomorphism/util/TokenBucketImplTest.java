@@ -17,6 +17,7 @@ package org.isomorphism.util;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,68 @@ public class TokenBucketImplTest
   private final MockRefillStrategy refillStrategy = new MockRefillStrategy();
   private final TokenBucket.SleepStrategy sleepStrategy = mock(TokenBucket.SleepStrategy.class);
   private final TokenBucketImpl bucket = new TokenBucketImpl(CAPACITY, refillStrategy, sleepStrategy);
+
+  @Test
+  public void testGetCapacity() {
+    assertEquals(CAPACITY, bucket.getCapacity());
+  }
+
+  @Test
+  public void testEmptyBucketHasZeroTokens() {
+    assertEquals(0, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testAddingTokenIncreasesNumTokens() {
+    refillStrategy.addToken();
+    assertEquals(1, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testAddingMultipleTokensIncreasesNumTokens() {
+    refillStrategy.addTokens(2);
+    assertEquals(2, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testAtCapacityNumTokens() {
+    refillStrategy.addTokens(CAPACITY);
+    assertEquals(CAPACITY, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testOverCapacityNumTokens() {
+    refillStrategy.addTokens(CAPACITY + 1);
+    assertEquals(CAPACITY, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testConsumingTokenDecreasesNumTokens() {
+    refillStrategy.addTokens(1);
+    bucket.consume();
+    assertEquals(0, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testConsumingMultipleTokensDecreasesNumTokens() {
+    refillStrategy.addTokens(CAPACITY);
+    bucket.consume(2);
+    assertEquals(CAPACITY - 2, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testEmptyNumTokens() {
+    refillStrategy.addTokens(CAPACITY);
+    bucket.consume(CAPACITY);
+    assertEquals(0, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testFailedConsumeKeepsNumTokens() {
+    refillStrategy.addTokens(1);
+    bucket.tryConsume(2);
+    assertEquals(1, bucket.getNumTokens());
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void testTryConsumeZeroTokens()

@@ -24,6 +24,21 @@ package org.isomorphism.util;
 public interface TokenBucket
 {
   /**
+   * Returns the capacity of this token bucket.  This is the maximum number of tokens that the bucket can hold at
+   * any one time.
+   *
+   * @return The capacity of the bucket.
+   */
+  long getCapacity();
+
+  /**
+   * Returns the current number of tokens in the bucket.  If the bucket is empty then this method will return 0.
+   *
+   * @return The current number of tokens in the bucket.
+   */
+  long getNumTokens();
+
+  /**
    * Attempt to consume a single token from the bucket.  If it was consumed then {@code true} is returned, otherwise
    * {@code false} is returned.
    *
