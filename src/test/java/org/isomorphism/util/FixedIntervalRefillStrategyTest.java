@@ -58,6 +58,37 @@ public class FixedIntervalRefillStrategyTest
     }
   }
 
+  @Test
+  public void testDurationUntilFirstRefill() {
+    // A refill has never happened, so one is supposed to happen immediately.
+    assertEquals(0, strategy.getDurationUntilNextRefill(TimeUnit.SECONDS));
+  }
+
+  @Test
+  public void testDurationAfterFirstRefill() {
+    strategy.refill();
+
+    for (int i = 0; i < P - 1; i++) {
+      assertEquals(P - i, strategy.getDurationUntilNextRefill(TimeUnit.SECONDS));
+      ticker.advance(1, U);
+    }
+  }
+
+  @Test
+  public void testDurationAtSecondRefillTime() {
+    strategy.refill();
+    ticker.advance(P, U);
+
+    assertEquals(0, strategy.getDurationUntilNextRefill(TimeUnit.SECONDS));
+  }
+
+  @Test
+  public void testDurationInProperUnits() {
+    strategy.refill();
+
+    assertEquals(10000, strategy.getDurationUntilNextRefill(TimeUnit.MILLISECONDS));
+  }
+
   private static final class MockTicker extends Ticker
   {
     private long now = 0;

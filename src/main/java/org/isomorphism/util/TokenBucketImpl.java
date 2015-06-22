@@ -15,6 +15,8 @@
  */
 package org.isomorphism.util;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,6 +52,44 @@ class TokenBucketImpl implements TokenBucket
   }
 
   /**
+   * Returns the capacity of this token bucket.  This is the maximum number of tokens that the bucket can hold at
+   * any one time.
+   *
+   * @return The capacity of the bucket.
+   */
+  @Override
+  public long getCapacity() {
+    return capacity;
+  }
+
+  /**
+   * Returns the current number of tokens in the bucket.  If the bucket is empty then this method will return 0.
+   *
+   * @return The current number of tokens in the bucket.
+   */
+  @Override
+  public synchronized long getNumTokens() {
+    // Give the refill strategy a chance to add tokens if it needs to so that we have an accurate
+    // count.
+    refill();
+
+    return size;
+  }
+
+  /**
+  * Returns the amount of time in the specified time unit until the next group of tokens can be added to the token
+  * bucket.
+  *
+  * @see org.isomorphism.util.TokenBucket.RefillStrategy#getDurationUntilNextRefill(java.util.concurrent.TimeUnit)
+  * @param unit The time unit to express the return value in.
+  * @return The amount of time until the next group of tokens can be added to the token bucket.
+  */
+  @Override
+  public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException {
+    return refillStrategy.getDurationUntilNextRefill(unit);
+  }
+
+  /**
    * Attempt to consume a single token from the bucket.  If it was consumed then {@code true} is returned, otherwise
    * {@code false} is returned.
    *
@@ -72,9 +112,8 @@ class TokenBucketImpl implements TokenBucket
     checkArgument(numTokens > 0, "Number of tokens to consume must be positive");
     checkArgument(numTokens <= capacity, "Number of tokens to consume must be less than the capacity of the bucket.");
 
-    // Give the refill strategy a chance to add tokens if it needs to, but beware of overflow
-    long newTokens = Math.min(capacity, Math.max(0, refillStrategy.refill()));
-    size = Math.max(0, Math.min(size + newTokens, capacity));
+
+    refill();
 
     // Now try to consume some tokens
     if (numTokens <= size) {
@@ -109,5 +148,13 @@ class TokenBucketImpl implements TokenBucket
 
       sleepStrategy.sleep();
     }
+  }
+
+  /**
+   * Attempt to add some tokens to the bucket if the refill strategy will permit it.
+   */
+  private synchronized void refill() {
+    long newTokens = Math.min(capacity, Math.max(0, refillStrategy.refill()));
+    size = Math.max(0, Math.min(size + newTokens, capacity));
   }
 }
