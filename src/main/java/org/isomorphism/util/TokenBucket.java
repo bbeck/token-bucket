@@ -15,6 +15,8 @@
  */
 package org.isomorphism.util;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * A token bucket is used for rate limiting access to a portion of code.
  *
@@ -37,6 +39,16 @@ public interface TokenBucket
    * @return The current number of tokens in the bucket.
    */
   long getNumTokens();
+
+  /**
+   * Returns the amount of time in the specified time unit until the next group of tokens can be added to the token
+   * bucket.
+   *
+   * @see org.isomorphism.util.TokenBucket.RefillStrategy#getDurationUntilNextRefill(java.util.concurrent.TimeUnit)
+   * @param unit The time unit to express the return value in.
+   * @return The amount of time until the next group of tokens can be added to the token bucket.
+   */
+  long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException;
 
   /**
    * Attempt to consume a single token from the bucket.  If it was consumed then {@code true} is returned, otherwise
@@ -78,6 +90,20 @@ public interface TokenBucket
      * @return The number of tokens to add to the token bucket.
      */
     long refill();
+
+    /**
+     * Returns the amount of time in the specified time unit until the next group of tokens can be added to the token
+     * bucket.  Please note, depending on the {@code SleepStrategy} used by the token bucket, tokens may not actually
+     * be added until much after the returned duration.  If for some reason the implementation of
+     * {@code RefillStrategy} doesn't support knowing when the next batch of tokens will be added, then an
+     * {@code UnsupportedOperationException} may be thrown.  Lastly, if the duration until the next time tokens will
+     * be added to the token bucket is less than a single unit of the passed in time unit then this method will
+     * return 0.
+     *
+     * @param unit The time unit to express the return value in.
+     * @return The amount of time until the next group of tokens can be added to the token bucket.
+     */
+    long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException;
   }
 
   /** Encapsulation of a strategy for relinquishing control of the CPU. */

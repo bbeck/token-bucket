@@ -15,6 +15,8 @@
  */
 package org.isomorphism.util;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -72,6 +74,19 @@ class TokenBucketImpl implements TokenBucket
     refill();
 
     return size;
+  }
+
+  /**
+  * Returns the amount of time in the specified time unit until the next group of tokens can be added to the token
+  * bucket.
+  *
+  * @see org.isomorphism.util.TokenBucket.RefillStrategy#getDurationUntilNextRefill(java.util.concurrent.TimeUnit)
+  * @param unit The time unit to express the return value in.
+  * @return The amount of time until the next group of tokens can be added to the token bucket.
+  */
+  @Override
+  public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException {
+    return refillStrategy.getDurationUntilNextRefill(unit);
   }
 
   /**
