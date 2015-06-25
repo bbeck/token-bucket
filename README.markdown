@@ -68,7 +68,7 @@ The token bucket library is distributed through maven central.  Just include it 
 <dependency>
     <groupId>org.isomorphism</groupId>
     <artifactId>token-bucket</artifactId>
-    <version>1.5</version>
+    <version>1.6</version>
 </dependency>
 ```
 
