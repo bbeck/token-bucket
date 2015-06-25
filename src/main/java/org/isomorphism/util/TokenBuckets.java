@@ -28,12 +28,6 @@ public final class TokenBuckets
 {
   private TokenBuckets() {}
 
-  @Override
-  public int hashCode()
-  {
-    return super.hashCode();
-  }
-
   /** Create a new builder for token buckets. */
   public static Builder builder()
   {
