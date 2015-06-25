@@ -42,7 +42,7 @@ public class FixedIntervalRefillStrategyTest
   {
     strategy.refill();
 
-    // Another refill shouldn't come for P units.
+    // Another refill shouldn't come for P time units.
     for (int i = 0; i < P - 1; i++) {
       ticker.advance(1, U);
       assertEquals(0, strategy.refill());
@@ -52,20 +52,71 @@ public class FixedIntervalRefillStrategyTest
   @Test
   public void testRefillEveryPeriod()
   {
-    for (int i = 0; i < 10; i++) {
-      assertEquals(N, strategy.refill());
-      ticker.advance(P, U);
-    }
+    strategy.refill();
+
+    ticker.advance(P, U);
+    assertEquals(N, strategy.refill());
+
+    ticker.advance(P, U);
+    assertEquals(N, strategy.refill());
+
+    ticker.advance(P, U);
+    assertEquals(N, strategy.refill());
   }
 
   @Test
-  public void testDurationUntilFirstRefill() {
+  public void testRefillEveryOtherPeriod()
+  {
+    strategy.refill();
+
+    // Move time forward two periods, since we're skipping a period next time we should add double the tokens.
+    ticker.advance(2 * P, U);
+    assertEquals(2 * N, strategy.refill());
+
+    ticker.advance(2 * P, U);
+    assertEquals(2 * N, strategy.refill());
+  }
+
+  @Test
+  public void testRefillOnNonEvenPeriods()
+  {
+    // The strategy is configured to refill tokens every P time units.  So we should only get refills at 0, P, 2P, 3P,
+    // etc.  Any other time should return 0 tokens.
+
+    // t = 0
+    assertEquals(N, strategy.refill());
+
+    // t = P+1
+    ticker.advance(P + 1, U);
+    assertEquals(N, strategy.refill());
+
+    // t = 2P+1
+    ticker.advance(P, U);
+    assertEquals(N, strategy.refill());
+
+    // t = 3P
+    ticker.advance(P - 1, U);
+    assertEquals(N, strategy.refill());
+
+    // t = 4P-1
+    ticker.advance(P - 1, U);
+    assertEquals(0, strategy.refill());
+
+    // t = 4P
+    ticker.advance(1, U);
+    assertEquals(N, strategy.refill());
+  }
+
+  @Test
+  public void testDurationUntilFirstRefill()
+  {
     // A refill has never happened, so one is supposed to happen immediately.
     assertEquals(0, strategy.getDurationUntilNextRefill(TimeUnit.SECONDS));
   }
 
   @Test
-  public void testDurationAfterFirstRefill() {
+  public void testDurationAfterFirstRefill()
+  {
     strategy.refill();
 
     for (int i = 0; i < P - 1; i++) {
@@ -75,7 +126,8 @@ public class FixedIntervalRefillStrategyTest
   }
 
   @Test
-  public void testDurationAtSecondRefillTime() {
+  public void testDurationAtSecondRefillTime()
+  {
     strategy.refill();
     ticker.advance(P, U);
 
@@ -83,7 +135,8 @@ public class FixedIntervalRefillStrategyTest
   }
 
   @Test
-  public void testDurationInProperUnits() {
+  public void testDurationInProperUnits()
+  {
     strategy.refill();
 
     assertEquals(10000, strategy.getDurationUntilNextRefill(TimeUnit.MILLISECONDS));
