@@ -30,4 +30,9 @@ public class TokenBucketBuilderTest
   public void testZeroCapacity() {
     builder.withCapacity(0);
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNegativeInitialTokens() {
+    builder.withInitialTokens(-1);
+  }
 }

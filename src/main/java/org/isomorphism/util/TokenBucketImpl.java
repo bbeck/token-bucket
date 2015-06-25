@@ -41,14 +41,15 @@ class TokenBucketImpl implements TokenBucket
   private final SleepStrategy sleepStrategy;
   private long size;
 
-  TokenBucketImpl(long capacity, RefillStrategy refillStrategy, SleepStrategy sleepStrategy)
+  TokenBucketImpl(long capacity, long initialTokens, RefillStrategy refillStrategy, SleepStrategy sleepStrategy)
   {
     checkArgument(capacity > 0);
+    checkArgument(initialTokens <= capacity);
 
     this.capacity = capacity;
     this.refillStrategy = checkNotNull(refillStrategy);
     this.sleepStrategy = checkNotNull(sleepStrategy);
-    this.size = 0;
+    this.size = initialTokens;
   }
 
   /**
@@ -111,7 +112,6 @@ class TokenBucketImpl implements TokenBucket
   {
     checkArgument(numTokens > 0, "Number of tokens to consume must be positive");
     checkArgument(numTokens <= capacity, "Number of tokens to consume must be less than the capacity of the bucket.");
-
 
     refill();
 

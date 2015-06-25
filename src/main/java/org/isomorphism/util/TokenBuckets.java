@@ -28,6 +28,13 @@ public final class TokenBuckets
 {
   private TokenBuckets() {}
 
+  @Override
+  public int hashCode()
+  {
+    return super.hashCode();
+  }
+
+  /** Create a new builder for token buckets. */
   public static Builder builder()
   {
     return new Builder();
@@ -36,14 +43,24 @@ public final class TokenBuckets
   public static class Builder
   {
     private Long capacity = null;
+    private long initialTokens = 0;
     private TokenBucketImpl.RefillStrategy refillStrategy = null;
     private TokenBucketImpl.SleepStrategy sleepStrategy = YIELDING_SLEEP_STRATEGY;
     private final Ticker ticker = Ticker.systemTicker();
 
+    /** Specify the overall capacity of the token bucket. */
     public Builder withCapacity(long numTokens)
     {
       checkArgument(numTokens > 0, "Must specify a positive number of tokens");
       capacity = numTokens;
+      return this;
+    }
+
+    /** Initialize the token bucket with a specific number of tokens. */
+    public Builder withInitialTokens(long numTokens)
+    {
+      checkArgument(numTokens > 0, "Must specify a positive number of tokens");
+      initialTokens = numTokens;
       return this;
     }
 
@@ -88,7 +105,7 @@ public final class TokenBuckets
       checkNotNull(capacity, "Must specify a capacity");
       checkNotNull(refillStrategy, "Must specify a refill strategy");
 
-      return new TokenBucketImpl(capacity, refillStrategy, sleepStrategy);
+      return new TokenBucketImpl(capacity, initialTokens, refillStrategy, sleepStrategy);
     }
   }
 

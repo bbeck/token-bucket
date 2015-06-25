@@ -30,65 +30,100 @@ public class TokenBucketImplTest
 
   private final MockRefillStrategy refillStrategy = new MockRefillStrategy();
   private final TokenBucket.SleepStrategy sleepStrategy = mock(TokenBucket.SleepStrategy.class);
-  private final TokenBucketImpl bucket = new TokenBucketImpl(CAPACITY, refillStrategy, sleepStrategy);
+  private final TokenBucketImpl bucket = new TokenBucketImpl(CAPACITY, 0, refillStrategy, sleepStrategy);
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNegativeCapacity()
+  {
+    new TokenBucketImpl(-1, 0, refillStrategy, sleepStrategy);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testZeroCapacity()
+  {
+    new TokenBucketImpl(0, 0, refillStrategy, sleepStrategy);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testMoreInitialTokensThanCapacity()
+  {
+    new TokenBucketImpl(1, 2, refillStrategy, sleepStrategy);
+  }
 
   @Test
-  public void testGetCapacity() {
+  public void testGetCapacity()
+  {
     assertEquals(CAPACITY, bucket.getCapacity());
   }
 
   @Test
-  public void testEmptyBucketHasZeroTokens() {
+  public void testEmptyBucketHasZeroTokens()
+  {
     assertEquals(0, bucket.getNumTokens());
   }
 
   @Test
-  public void testAddingTokenIncreasesNumTokens() {
+  public void testBucketWithInitialTokens()
+  {
+    TokenBucketImpl bucket = new TokenBucketImpl(CAPACITY, CAPACITY, refillStrategy, sleepStrategy);
+    assertEquals(CAPACITY, bucket.getNumTokens());
+  }
+
+  @Test
+  public void testAddingTokenIncreasesNumTokens()
+  {
     refillStrategy.addToken();
     assertEquals(1, bucket.getNumTokens());
   }
 
   @Test
-  public void testAddingMultipleTokensIncreasesNumTokens() {
+  public void testAddingMultipleTokensIncreasesNumTokens()
+  {
     refillStrategy.addTokens(2);
     assertEquals(2, bucket.getNumTokens());
   }
 
   @Test
-  public void testAtCapacityNumTokens() {
+  public void testAtCapacityNumTokens()
+  {
     refillStrategy.addTokens(CAPACITY);
     assertEquals(CAPACITY, bucket.getNumTokens());
   }
 
   @Test
-  public void testOverCapacityNumTokens() {
+  public void testOverCapacityNumTokens()
+  {
     refillStrategy.addTokens(CAPACITY + 1);
     assertEquals(CAPACITY, bucket.getNumTokens());
   }
 
   @Test
-  public void testConsumingTokenDecreasesNumTokens() {
+  public void testConsumingTokenDecreasesNumTokens()
+  {
     refillStrategy.addTokens(1);
     bucket.consume();
     assertEquals(0, bucket.getNumTokens());
   }
 
   @Test
-  public void testConsumingMultipleTokensDecreasesNumTokens() {
+  public void testConsumingMultipleTokensDecreasesNumTokens()
+  {
     refillStrategy.addTokens(CAPACITY);
     bucket.consume(2);
     assertEquals(CAPACITY - 2, bucket.getNumTokens());
   }
 
   @Test
-  public void testEmptyNumTokens() {
+  public void testEmptyNumTokens()
+  {
     refillStrategy.addTokens(CAPACITY);
     bucket.consume(CAPACITY);
     assertEquals(0, bucket.getNumTokens());
   }
 
   @Test
-  public void testFailedConsumeKeepsNumTokens() {
+  public void testFailedConsumeKeepsNumTokens()
+  {
     refillStrategy.addTokens(1);
     bucket.tryConsume(2);
     assertEquals(1, bucket.getNumTokens());
@@ -113,7 +148,7 @@ public class TokenBucketImplTest
   }
 
   @Test
-  public void testBucketInitiallyEmpty()
+  public void testTryConsumeOnEmptyBucket()
   {
     assertFalse(bucket.tryConsume());
   }
@@ -163,7 +198,8 @@ public class TokenBucketImplTest
     }
 
     @Override
-    public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException {
+    public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException
+    {
       throw new UnsupportedOperationException();
     }
 
