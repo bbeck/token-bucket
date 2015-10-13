@@ -168,6 +168,37 @@ public class TokenBucketImplTest
   }
 
   @Test
+  public void testTryManuallyRefillOneToken()
+  {
+    bucket.refill(1);
+    assertTrue(bucket.tryConsume());
+  }
+
+  @Test
+  public void testTryManuallyRefillCapacityTokens()
+  {
+    bucket.refill(CAPACITY);
+    assertTrue(bucket.tryConsume(CAPACITY));
+    assertFalse(bucket.tryConsume(1));
+  }
+
+  @Test
+  public void testTryManuallyRefillMoreThanCapacityTokens()
+  {
+    bucket.refill(CAPACITY + 1);
+    assertTrue(bucket.tryConsume(CAPACITY));
+    assertFalse(bucket.tryConsume(1));
+  }
+
+  @Test
+  public void testTryManualRefillAndStrategyRefill() {
+    bucket.refill(CAPACITY);
+    refillStrategy.addTokens(CAPACITY);
+    assertTrue(bucket.tryConsume(CAPACITY));
+    assertFalse(bucket.tryConsume(1));
+  }
+
+  @Test
   public void testTryRefillMoreThanCapacityTokens()
   {
     refillStrategy.addTokens(CAPACITY + 1);

@@ -81,6 +81,14 @@ public interface TokenBucket
    */
   void consume(long numTokens);
 
+  /**
+   * Refills the bucket with the specified number of tokens.  If the bucket is currently full or near capacity then
+   * fewer than {@code numTokens} may be added.
+   *
+   * @param numTokens The number of tokens to add to the bucket.
+   */
+  void refill(long numTokens);
+
   /** Encapsulation of a refilling strategy for a token bucket. */
   static interface RefillStrategy
   {

@@ -59,7 +59,8 @@ class TokenBucketImpl implements TokenBucket
    * @return The capacity of the bucket.
    */
   @Override
-  public long getCapacity() {
+  public long getCapacity()
+  {
     return capacity;
   }
 
@@ -69,10 +70,11 @@ class TokenBucketImpl implements TokenBucket
    * @return The current number of tokens in the bucket.
    */
   @Override
-  public synchronized long getNumTokens() {
+  public synchronized long getNumTokens()
+  {
     // Give the refill strategy a chance to add tokens if it needs to so that we have an accurate
     // count.
-    refill();
+    refill(refillStrategy.refill());
 
     return size;
   }
@@ -86,7 +88,8 @@ class TokenBucketImpl implements TokenBucket
   * @return The amount of time until the next group of tokens can be added to the token bucket.
   */
   @Override
-  public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException {
+  public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException
+  {
     return refillStrategy.getDurationUntilNextRefill(unit);
   }
 
@@ -113,7 +116,7 @@ class TokenBucketImpl implements TokenBucket
     checkArgument(numTokens > 0, "Number of tokens to consume must be positive");
     checkArgument(numTokens <= capacity, "Number of tokens to consume must be less than the capacity of the bucket.");
 
-    refill();
+    refill(refillStrategy.refill());
 
     // Now try to consume some tokens
     if (numTokens <= size) {
@@ -151,10 +154,14 @@ class TokenBucketImpl implements TokenBucket
   }
 
   /**
-   * Attempt to add some tokens to the bucket if the refill strategy will permit it.
+   * Refills the bucket with the specified number of tokens.  If the bucket is currently full or near capacity then
+   * fewer than {@code numTokens} may be added.
+   *
+   * @param numTokens The number of tokens to add to the bucket.
    */
-  private synchronized void refill() {
-    long newTokens = Math.min(capacity, Math.max(0, refillStrategy.refill()));
+  public synchronized void refill(long numTokens)
+  {
+    long newTokens = Math.min(capacity, Math.max(0, numTokens));
     size = Math.max(0, Math.min(size + newTokens, capacity));
   }
 }
