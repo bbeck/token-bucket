@@ -29,8 +29,8 @@ public class FixedIntervalRefillStrategy implements TokenBucketImpl.RefillStrate
   private final Ticker ticker;
   private final long numTokensPerPeriod;
   private final long periodDurationInNanos;
-  private long lastRefillTime;
-  private long nextRefillTime;
+  private volatile long lastRefillTime;
+  private volatile long nextRefillTime;
 
   /**
    * Create a FixedIntervalRefillStrategy.
@@ -57,15 +57,18 @@ public class FixedIntervalRefillStrategy implements TokenBucketImpl.RefillStrate
       return 0;
     }
 
+    // Minimize volatile accesses
+    long localLastRefillTime = lastRefillTime;
+
     // We now know that we need to refill the bucket with some tokens, the question is how many.  We need to count how
     // many periods worth of tokens we've missed.
-    long numPeriods = Math.max(0, (now - lastRefillTime) / periodDurationInNanos);
+    long numPeriods = Math.max(0, (now - localLastRefillTime) / periodDurationInNanos);
 
     // Move the last refill time forward by this many periods.
-    lastRefillTime += numPeriods * periodDurationInNanos;
+    lastRefillTime = localLastRefillTime += numPeriods * periodDurationInNanos;
 
     // ...and we'll refill again one period after the last time we refilled.
-    nextRefillTime = lastRefillTime + periodDurationInNanos;
+    nextRefillTime = localLastRefillTime + periodDurationInNanos;
 
     return numPeriods * numTokensPerPeriod;
   }

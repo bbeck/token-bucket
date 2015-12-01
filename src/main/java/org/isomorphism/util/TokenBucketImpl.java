@@ -39,7 +39,7 @@ class TokenBucketImpl implements TokenBucket
   private final long capacity;
   private final RefillStrategy refillStrategy;
   private final SleepStrategy sleepStrategy;
-  private long size;
+  private volatile long size;
 
   TokenBucketImpl(long capacity, long initialTokens, RefillStrategy refillStrategy, SleepStrategy sleepStrategy)
   {
