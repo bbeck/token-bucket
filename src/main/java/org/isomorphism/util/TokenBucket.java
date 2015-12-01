@@ -93,7 +93,7 @@ public interface TokenBucket
   static interface RefillStrategy
   {
     /**
-     * Returns the number of tokens to add to the token bucket.
+     * Returns the number of tokens to add to the token bucket based on when the bucket was last refilled.
      *
      * @return The number of tokens to add to the token bucket.
      */
