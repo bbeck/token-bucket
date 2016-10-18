@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.isomorphism</groupId>
-  <artifactId>token-bucket</artifactId>
+  <artifactId>Throttler</artifactId>
   <version>1.8-SNAPSHOT</version>
   <packaging>jar</packaging>
 
@@ -13,9 +13,9 @@
     <version>9</version>
   </parent>
 
-  <name>token-bucket</name>
-  <description>Token bucket algorithm for rate-limiting</description>
-  <url>http://github.com/bbeck/token-bucket</url>
+  <name>Throttler</name>
+  <description>Aspect based throttling engine</description>
+  <url>https://github.com/Khalian/Throttler</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -30,9 +30,9 @@
   </properties>
 
   <scm>
-    <url>http://github.com/bbeck/token-bucket</url>
-    <connection>scm:git:git@github.com:bbeck/token-bucket.git</connection>
-    <developerConnection>scm:git:git@github.com:bbeck/token-bucket.git</developerConnection>
+    <url>https://github.com/Khalian/Throttler</url>
+    <connection>scm:git:git@github.com:Khalian/Throttler.git</connection>
+    <developerConnection>scm:git:git@github.com:Khalian/Throttler.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
@@ -53,8 +53,8 @@
   <developers>
     <developer>
       <id>bbeck</id>
-      <name>Brandon Beck</name>
-      <url>http://github.com/bbeck</url>
+      <name>Arunav Sanyal</name>
+      <url>http://github.com/Khalian</url>
     </developer>
   </developers>
 
@@ -64,6 +64,20 @@
       <artifactId>guava</artifactId>
       <version>18.0</version>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.google.inject/guice -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>aopalliance</groupId>
+      <artifactId>aopalliance</artifactId>
+      <version>1.0</version>
+    </dependency>
+
 
     <dependency>
       <groupId>junit</groupId>
@@ -77,6 +91,11 @@
       <artifactId>mockito-core</artifactId>
       <version>1.10.19</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.10.19</version>
     </dependency>
   </dependencies>
 </project>

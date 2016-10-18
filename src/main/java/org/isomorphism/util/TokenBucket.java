@@ -27,7 +27,7 @@ public interface TokenBucket
 {
   /**
    * Returns the capacity of this token bucket.  This is the maximum number of tokens that the bucket can hold at
-   * any one time.
+   * https://github.com/Khalian/token-bucketany one time.
    *
    * @return The capacity of the bucket.
    */
