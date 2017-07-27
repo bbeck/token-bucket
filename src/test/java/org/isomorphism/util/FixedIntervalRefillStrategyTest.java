@@ -18,18 +18,22 @@ package org.isomorphism.util;
 import com.google.common.base.Ticker;
 import org.junit.Test;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class FixedIntervalRefillStrategyTest
 {
   private static final long N = 5;                     // 5 tokens
-  private static final long P = 10;                    // every 10
+  private static final Duration P = Duration.of(10, SECONDS);                    // every 10
   private static final TimeUnit U = TimeUnit.SECONDS;  // seconds
 
   private final MockTicker ticker = new MockTicker();
-  private final FixedIntervalRefillStrategy strategy = new FixedIntervalRefillStrategy(ticker, N, P, U);
+  private final FixedIntervalRefillStrategy strategy = new FixedIntervalRefillStrategy(ticker, N, P);
 
   @Test
   public void testFirstRefill()
@@ -43,8 +47,8 @@ public class FixedIntervalRefillStrategyTest
     strategy.refill();
 
     // Another refill shouldn't come for P time units.
-    for (int i = 0; i < P - 1; i++) {
-      ticker.advance(1, U);
+    for (int i = 0; i < P.getSeconds() - 1; i++) {
+      ticker.advance(Duration.of(1, SECONDS));
       assertEquals(0, strategy.refill());
     }
   }
@@ -54,13 +58,13 @@ public class FixedIntervalRefillStrategyTest
   {
     strategy.refill();
 
-    ticker.advance(P, U);
+    ticker.advance(P);
     assertEquals(N, strategy.refill());
 
-    ticker.advance(P, U);
+    ticker.advance(P);
     assertEquals(N, strategy.refill());
 
-    ticker.advance(P, U);
+    ticker.advance(P);
     assertEquals(N, strategy.refill());
   }
 
@@ -70,10 +74,10 @@ public class FixedIntervalRefillStrategyTest
     strategy.refill();
 
     // Move time forward two periods, since we're skipping a period next time we should add double the tokens.
-    ticker.advance(2 * P, U);
+    ticker.advance(P.multipliedBy(2));
     assertEquals(2 * N, strategy.refill());
 
-    ticker.advance(2 * P, U);
+    ticker.advance(P.multipliedBy(2));
     assertEquals(2 * N, strategy.refill());
   }
 
@@ -87,23 +91,23 @@ public class FixedIntervalRefillStrategyTest
     assertEquals(N, strategy.refill());
 
     // t = P+1
-    ticker.advance(P + 1, U);
+    ticker.advance(P.plus(1, SECONDS));
     assertEquals(N, strategy.refill());
 
     // t = 2P+1
-    ticker.advance(P, U);
+    ticker.advance(P);
     assertEquals(N, strategy.refill());
 
     // t = 3P
-    ticker.advance(P - 1, U);
+    ticker.advance(P.minus(1, SECONDS));
     assertEquals(N, strategy.refill());
 
     // t = 4P-1
-    ticker.advance(P - 1, U);
+    ticker.advance(P.minus(1, SECONDS));
     assertEquals(0, strategy.refill());
 
     // t = 4P
-    ticker.advance(1, U);
+    ticker.advance(Duration.of(1, SECONDS));
     assertEquals(N, strategy.refill());
   }
 
@@ -119,9 +123,9 @@ public class FixedIntervalRefillStrategyTest
   {
     strategy.refill();
 
-    for (int i = 0; i < P - 1; i++) {
-      assertEquals(P - i, strategy.getDurationUntilNextRefill(TimeUnit.SECONDS));
-      ticker.advance(1, U);
+    for (int i = 0; i < P.getSeconds() - 1; i++) {
+      assertEquals(P.getSeconds() - i, strategy.getDurationUntilNextRefill().getSeconds());
+      ticker.advance(Duration.of(1, SECONDS));
     }
   }
 
@@ -129,9 +133,9 @@ public class FixedIntervalRefillStrategyTest
   public void testDurationAtSecondRefillTime()
   {
     strategy.refill();
-    ticker.advance(P, U);
+    ticker.advance(P);
 
-    assertEquals(0, strategy.getDurationUntilNextRefill(TimeUnit.SECONDS));
+    assertTrue(strategy.getDurationUntilNextRefill().isZero());
   }
 
   @Test
@@ -139,7 +143,7 @@ public class FixedIntervalRefillStrategyTest
   {
     strategy.refill();
 
-    assertEquals(10000, strategy.getDurationUntilNextRefill(TimeUnit.MILLISECONDS));
+    assertEquals(P, strategy.getDurationUntilNextRefill());
   }
 
   private static final class MockTicker extends Ticker
@@ -152,9 +156,9 @@ public class FixedIntervalRefillStrategyTest
       return now;
     }
 
-    public void advance(long delta, TimeUnit unit)
+    public void advance(Duration delta)
     {
-      now += unit.toNanos(delta);
+      now += delta.toNanos();
     }
   }
 }

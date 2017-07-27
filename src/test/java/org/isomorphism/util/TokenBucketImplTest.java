@@ -17,6 +17,7 @@ package org.isomorphism.util;
 
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -231,6 +232,11 @@ public class TokenBucketImplTest
     @Override
     public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException
     {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Duration getDurationUntilNextRefill() {
       throw new UnsupportedOperationException();
     }
 

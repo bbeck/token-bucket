@@ -15,10 +15,12 @@
  */
 package org.isomorphism.util;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * A token bucket implementation that is of a leaky bucket in the sense that it has a finite capacity and any added
@@ -80,17 +82,31 @@ class TokenBucketImpl implements TokenBucket
   }
 
   /**
-  * Returns the amount of time in the specified time unit until the next group of tokens can be added to the token
-  * bucket.
-  *
-  * @see org.isomorphism.util.TokenBucket.RefillStrategy#getDurationUntilNextRefill(java.util.concurrent.TimeUnit)
-  * @param unit The time unit to express the return value in.
-  * @return The amount of time until the next group of tokens can be added to the token bucket.
-  */
+   * Returns the amount of time in the specified time unit until the next group of tokens can be added to the token
+   * bucket.
+   *
+   * @see org.isomorphism.util.TokenBucket.RefillStrategy#getDurationUntilNextRefill(java.util.concurrent.TimeUnit)
+   * @param unit The time unit to express the return value in.
+   * @return The amount of time until the next group of tokens can be added to the token bucket.
+   */
   @Override
+  @Deprecated
   public long getDurationUntilNextRefill(TimeUnit unit) throws UnsupportedOperationException
   {
-    return refillStrategy.getDurationUntilNextRefill(unit);
+    return unit.convert(getDurationUntilNextRefill().toNanos(), NANOSECONDS);
+  }
+
+  /**
+   * Returns the amount of time in the specified time unit until the next group of tokens can be added to the token
+   * bucket.
+   *
+   * @see org.isomorphism.util.TokenBucket.RefillStrategy#getDurationUntilNextRefill()
+   * @return The amount of time until the next group of tokens can be added to the token bucket.
+   */
+  @Override
+  public Duration getDurationUntilNextRefill() throws UnsupportedOperationException
+  {
+    return refillStrategy.getDurationUntilNextRefill();
   }
 
   /**

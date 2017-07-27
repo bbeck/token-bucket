@@ -17,11 +17,14 @@ package org.isomorphism.util;
 
 import com.google.common.base.Ticker;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.threeten.extra.Temporals;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.threeten.extra.Temporals.chronoUnit;
 
 /** Static utility methods pertaining to creating {@link TokenBucketImpl} instances. */
 public final class TokenBuckets
@@ -58,10 +61,21 @@ public final class TokenBuckets
       return this;
     }
 
-    /** Refill tokens at a fixed interval. */
+    /**
+     * Refill tokens at a fixed interval.
+     *
+     * @deprecated since 1.8, see {@link TokenBuckets.Builder#withFixedIntervalRefillStrategy(long, Duration)}
+     */
+    @Deprecated
     public Builder withFixedIntervalRefillStrategy(long refillTokens, long period, TimeUnit unit)
     {
-      return withRefillStrategy(new FixedIntervalRefillStrategy(ticker, refillTokens, period, unit));
+      return withFixedIntervalRefillStrategy(refillTokens, Duration.of(period, chronoUnit(unit)));
+    }
+
+    /** Refill tokens at a fixed interval. */
+    public Builder withFixedIntervalRefillStrategy(long refillTokens, Duration period)
+    {
+      return withRefillStrategy(new FixedIntervalRefillStrategy(ticker, refillTokens, period));
     }
 
     /** Use a user defined refill strategy. */
