@@ -16,8 +16,15 @@
 package org.isomorphism.util;
 
 import com.google.common.base.Ticker;
+import org.threeten.extra.Temporals;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
+
+import static java.time.temporal.ChronoUnit.NANOS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.threeten.extra.Temporals.chronoUnit;
 
 /**
  * A token bucket refill strategy that will provide N tokens for a token bucket to consume every T units of time.
@@ -39,14 +46,29 @@ public class FixedIntervalRefillStrategy implements TokenBucketImpl.RefillStrate
    * @param numTokensPerPeriod The number of tokens to add to the bucket every period.
    * @param period             How often to refill the bucket.
    * @param unit               Unit for period.
+   *
+   * @deprecated since 1.8 use {@link FixedIntervalRefillStrategy#FixedIntervalRefillStrategy(Ticker, long, Duration)}.
    */
+  @Deprecated
   public FixedIntervalRefillStrategy(Ticker ticker, long numTokensPerPeriod, long period, TimeUnit unit)
+  {
+    this(ticker, numTokensPerPeriod, Duration.of(period, chronoUnit(unit)));
+  }
+
+  /**
+   * Create a FixedIntervalRefillStrategy.
+   *
+   * @param ticker             A ticker to use to measure time.
+   * @param numTokensPerPeriod The number of tokens to add to the bucket every period.
+   * @param period             How often to refill the bucket.
+   */
+  public FixedIntervalRefillStrategy(Ticker ticker, long numTokensPerPeriod, Duration period)
   {
     this.ticker = ticker;
     this.numTokensPerPeriod = numTokensPerPeriod;
-    this.periodDurationInNanos = unit.toNanos(period);
-    this.lastRefillTime = -periodDurationInNanos;
-    this.nextRefillTime = -periodDurationInNanos;
+    this.periodDurationInNanos = period.toNanos();
+    this.lastRefillTime = -period.toNanos();
+    this.nextRefillTime = -period.toNanos();
   }
 
   @Override
@@ -73,8 +95,14 @@ public class FixedIntervalRefillStrategy implements TokenBucketImpl.RefillStrate
   @Override
   public long getDurationUntilNextRefill(TimeUnit unit)
   {
+    return unit.convert(getDurationUntilNextRefill().toNanos(), NANOSECONDS);
+  }
+
+  @Override
+  public Duration getDurationUntilNextRefill()
+  {
     long now = ticker.read();
-    return unit.convert(Math.max(0, nextRefillTime - now), TimeUnit.NANOSECONDS);
+    return Duration.of(Math.max(0, nextRefillTime - now), NANOS);
   }
 }
 
